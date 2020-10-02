@@ -1,4 +1,5 @@
-СС=gcc
-CFLAGS=-c -Wall -Werror
-%: %.c
-    $(CC) $@.c -o $@ $(CFLAGS) -fsanitize=address,leak
+all:
+	gcc main.c -o main -Wall -Werror -lm -fsanitize=address,leak
+
+clean:
+	rm main
