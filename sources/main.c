@@ -28,7 +28,7 @@ char *get_word(char *end) {
     word[i] = '\0';
     *end = ch;
     return word;
-}
+s}
 
 char **get_list() {
     char **list = NULL;
