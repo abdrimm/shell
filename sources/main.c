@@ -1,4 +1,4 @@
-#include <stdio.h>
+ #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -16,7 +16,7 @@ char *get_word(char *end) {
         return NULL;
     }
     while (ch != ' ' && ch != '\t' && ch != '\n') {
-        word = realloc(word, i * sizeof(char));
+        word = realloc(word, (i + 1) * sizeof(char));
         if (!word) {
             printf("word error");
             exit(1);
@@ -25,7 +25,7 @@ char *get_word(char *end) {
 	    i++;
         ch = getchar();
     }
-    word = realloc(word, i * sizeof(char));
+    word = realloc(word, (i + 1) * sizeof(char));
     word[i] = '\0';
     *end = ch;
     return word;
@@ -34,26 +34,28 @@ char *get_word(char *end) {
 char **get_list() {
     char **arr = NULL;
     char end;
-    char *c = get_word(&end);
+    char *word = get_word(&end);
     int i = 0;
-    while (1) {
+    while (word) {
         if (end == '\n') {
-            if (strlen(c) == 0) {
+            if (strlen(word) == 0) {
                 arr = realloc(arr, (i + 1) * sizeof(char*));
                 arr[i] = NULL;
-                free(c);
+                free(word);
             } else {
                 arr = realloc(arr, (i + 2) * sizeof(char*));
-                arr[i] = c;
+                arr[i] = word;
                 arr[i + 1] = NULL;
             }
             break;
         }
         i++;
         arr = realloc(arr, i * sizeof(char*));
-        arr[i - 1] = c;
-        c = get_word(&end);
+        arr[i - 1] = word;
+        word = get_word(&end);
     }
+    arr = realloc(arr, (i + 1) * sizeof(char*));
+    arr[i - 1] = NULL;
     return arr;
 }
 
@@ -103,5 +105,6 @@ int main() {
          redirection(list);
          clear(list);
      }
+     clear(list);
      return 0;
 }
