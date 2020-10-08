@@ -1,4 +1,4 @@
- #include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -6,7 +6,6 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <fcntl.h>
-#include <err.h>
 
 char *get_word(char *end) {
     char *word = NULL;
@@ -32,36 +31,36 @@ char *get_word(char *end) {
 }
 
 char **get_list() {
-    char **arr = NULL;
+    char **list = NULL;
     char end;
     char *word = get_word(&end);
     int i = 0;
     while (word) {
         if (end == '\n') {
             if (strlen(word) == 0) {
-                arr = realloc(arr, (i + 1) * sizeof(char*));
-                arr[i] = NULL;
+                list  = realloc(list, (i + 1) * sizeof(char*));
+                list[i] = NULL;
                 free(word);
             } else {
-                arr = realloc(arr, (i + 2) * sizeof(char*));
-                arr[i] = word;
-                arr[i + 1] = NULL;
+                list = realloc(list, (i + 2) * sizeof(char*));
+                list[i] = word;
+                list[i + 1] = NULL;
             }
             break;
         }
         i++;
-        arr = realloc(arr, i * sizeof(char*));
-        arr[i - 1] = word;
+        list = realloc(list, i * sizeof(char*));
+        list[i - 1] = word;
         word = get_word(&end);
     }
-    arr = realloc(arr, (i + 1) * sizeof(char*));
-    arr[i - 1] = NULL;
-    return arr;
+//    arr = realloc(arr, (i + 1) * sizeof(char*));
+  //  arr[i - 1] = NULL;
+    return list;
 }
 
 void redirection(char **list) {
     int i = 0, fd_in = 0, fd_out = 1;
-    while (list[i] != NULL) {
+    while (1) {
         if (strcmp(list[i], "<") == 0) {
             fd_in = open(list[i + 1], O_RDONLY);
             if (fd_in < 0) {
@@ -95,15 +94,20 @@ void clear(char **list) {
 }
 
 int main() {
-     char **list;
-     while(1) {
-         list = get_list();
-         if ((strcmp(list[0], "exit") == 0) || (strcmp(list[0], "quit") == 0)) {
-             clear(list);
-             break;
+     int fd_in = 0, fd_out = 1;
+     char **list = get_list();
+     while((strcmp(list[0], "exit") == 0) || (strcmp(list[0], "quit") == 0)) {
+         if (fork() > 0) {
+             wait(NULL);
+         } else {
+             dup2(fd_in, 0);
+             dup2(fd_out, 1);
+             if (execvp(list[0], list) < 0) {
+                 perror("exec failed");
+                return 1;
+             }
          }
-         redirection(list);
-         clear(list);
+         
      }
      clear(list);
      return 0;
