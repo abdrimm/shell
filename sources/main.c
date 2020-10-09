@@ -98,24 +98,8 @@ void clear(char **list) {
     }
     free(list);
 }
-/*
-int main() {
-	char **list;
-	while(1) {
-		list = get_list();
-		if ((strcmp(list[0], "exit") == 0) || (strcmp(list[0], "quit") == 0)) {
-			clear(list);
-			break;
-		}
-		redirection(list);
-		clear(list);
-	}
-	return 0;
-}
-*/
 
 int main() {
-//     int fd_in = 0, fd_out = 1;
      char **list = get_list();
      while ((strcmp(list[0], "exit") && strcmp(list[0], "quit")) || (!list[0])) {
         if (list[0]) {
