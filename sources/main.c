@@ -53,8 +53,6 @@ char **get_list() {
         list[i - 1] = word;
         word = get_word(&end);
     }
-  //  list = realloc(list, i * sizeof(char*));
-//    list[i - 1] = NULL;
     return list;
 }
 
@@ -85,8 +83,6 @@ void redirection(char **list) {
         }
         i++;
     }
-   // list = realloc(list, i * sizeof(char*));
-   // list[i] = NULL;
     return;
 }
 
