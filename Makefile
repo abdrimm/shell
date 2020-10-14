@@ -1,5 +1,5 @@
 all:
-	gcc main.c -o main -Wall -Werror -lm -fsanitize=address,leak
+	gcc sources/main.c -o sources/main -Wall -Werror -lm -fsanitize=address,leak
 
 clean:
-	rm main
+	rm sources/main
