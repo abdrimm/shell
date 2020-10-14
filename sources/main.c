@@ -86,6 +86,14 @@ void redirection(char **list) {
     return;
 }
 
+int is_exit(char **list) {
+    if ((strcmp(list[0], "exit") && strcmp(list[0], "quit")) || (!list[0])) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
 void clear(char **list) {
     int i = 0;
     while (list[i] != NULL) {
@@ -97,8 +105,7 @@ void clear(char **list) {
 
 int main() {
      char **list = get_list();
-     while ((strcmp(list[0], "exit") && strcmp(list[0], "quit")) || (!list[0])) {
-        if (list[0]) {
+     while (is_exit(list)) {
             if (fork() > 0) {
                 wait(NULL);
             } else {
@@ -108,7 +115,6 @@ int main() {
                     return 1;
                 }
             } 
-        }
         clear(list);
         list = get_list();
      }
