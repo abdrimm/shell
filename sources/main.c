@@ -149,6 +149,8 @@ void pipes(char **list) {
     int (*fd)[2] = malloc((str_num + 1) * sizeof(int[2]));
     for (i = 0; i <= str_num; i++) {
         pipe(fd[i]);
+	if (change_dir(list) == 1)
+		continue;
     }
     if (fork() == 0) {
         if (str_num) {
