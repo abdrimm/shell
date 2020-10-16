@@ -26,7 +26,7 @@ make
 ```
 * For example:
 ```bash
-ls | sort | grep .c
+ls -l > file.txt
 ```
 * At the end:
 ```bash
