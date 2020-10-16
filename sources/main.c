@@ -161,7 +161,6 @@ void pipes(char **list) {
             perror("exec failed");
             return;
         }
-        return;
     }
     for (i = 1; i <= str_num; i++) {
         if (fork() == 0) {
@@ -178,7 +177,6 @@ void pipes(char **list) {
                 perror("exec failed");
                 return;
             }
-            return;
         } else {
             close(fd[i - 1][1]);
             close(fd[i - 1][0]);
