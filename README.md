@@ -1,18 +1,38 @@
 # shell
-   Shell - командный интерпретатор, используемый в операционных системах семейства Unix, в котором пользователь может либо давать команды операционной системе по отдельности, либо запускать скрипты, состоящие из списка команд. Работа через shell  выглядит так: пользователь вводит команду, нажимает Enter, система выполняет команду, пишет на экран результат выполнения, и снова ожидает ввода следующей команды.
-## Этапы:
-1. Делим на лексемы
-2. Стандартный заупск программмы
-3. Перенаправление ввода-вывода
-4. Конвейер для двух элементов
-5. Конвейер для произвольного количества
+  Shell is a command interpreter used in operating systems of the Unix family, in which the user can either issue commands to the operating system individually, or run scripts consisting of a list of commands. Working through the shell looks like this: the user enters a command, presses Enter, the system executes the command, writes the execution result to the screen, and again waits for the next command to be entered.
+## Stages:
+1. Divide into lexemes
+2. Standard launch of the program
+3. I / O redirection
+4. Conveyor for two elements
+5. Conveyor for any amount
+6. Background mode
+7. Change the cd.
+8. New &&.
+9. Ctrl+c
 
 ## Запуск
-* Чтобы скомпилировать программу запустите [Makefile](https://github.com/abdrimm/shell/blob/master/Makefile):
+* Download repository:
+```bash
+git clone https://github.com/abdrimm/shell
+```
+* Compile by [Makefile](https://github.com/abdrimm/shell/blob/master/Makefile):
 ```bash
 make
 ```
-* Далее:
+* Execute:
 ```bash
 ./main
+```
+* For example:
+```bash
+ls | sort | grep
+```
+* At the end:
+```bash
+exit
+```
+* or
+```bash
+quit
 ```
