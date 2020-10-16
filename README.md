@@ -1,4 +1,4 @@
-# shell
+# Shell
   Shell is a command interpreter used in operating systems of the Unix family, in which the user can either issue commands to the operating system individually, or run scripts consisting of a list of commands. Working through the shell looks like this: the user enters a command, presses Enter, the system executes the command, writes the execution result to the screen, and again waits for the next command to be entered.
 ## Stages:
 1. Divide into lexemes
