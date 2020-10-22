@@ -22,8 +22,7 @@ make
 ```
 * Execute:
 ```bash
-cd sources
-./main
+./sources/main
 ```
 * For example:
 ```bash
