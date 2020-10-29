@@ -11,7 +11,7 @@ char *get_word(char *end) {
     char *word = NULL;
     char ch = getchar();
     int i = 0;
-    if (*end == '\n') {
+    if (ch == '\n') {
         return NULL;
     }
     while (ch != ' ' && ch != '\t' && ch != '\n') {
@@ -174,7 +174,7 @@ void pipes(char **list) {
             }
             close(fd[i][1]);
             close(fd[i][0]);
-            redirection(list, x[i]); 
+            redirection(list, x[i]);
             if (execvp(list[0], list) < 0) {
                 perror("exec failed");
                 return;
@@ -192,8 +192,8 @@ void pipes(char **list) {
     free(fd);
     clear(list);
     free(x);
-    x = malloc(sizeof(int));
-    x[0] = 0;
+  //  x = malloc(sizeof(int));
+  //  x[0] = 0;
     list = get_list();
 }
 
