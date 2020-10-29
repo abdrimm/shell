@@ -93,7 +93,7 @@ void redirection(char **list, int x) {
 }
 
 int is_exit(char **list) {
-    if ((strcmp(list[0], "exit") && strcmp(list[0], "quit")) || (!list[0])) {
+    if (list && ((strcmp(list[0], "exit") && strcmp(list[0], "quit")) || (!list[0]))) {
         return 1;
     } else {
         return 0;
