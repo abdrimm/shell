@@ -11,7 +11,7 @@
 8. New &&.
 9. Ctrl+c
 
-## Запуск
+## Execute
 * Download repository:
 ```bash
 git clone https://github.com/abdrimm/shell
