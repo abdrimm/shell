@@ -11,15 +11,8 @@ char *get_word(char *end) {
     char *word = NULL;
     char ch = getchar();
     int i = 0;
-    if (*end == '\n') {
-        return NULL;
-    }
     while (ch != ' ' && ch != '\t' && ch != '\n') {
         word = realloc(word, (i + 1) * sizeof(char));
-        if (!word) {
-            printf("word error");
-            exit(1);
-        }
         word[i] = ch;
 	    i++;
         ch = getchar();
@@ -33,26 +26,17 @@ char *get_word(char *end) {
 char **get_list() {
     char end;
     char **list = NULL;
-    char *word = get_word(&end);
     int i = 0;
-    while (1) {
-        if (end == '\n') {
-            if (strlen(word) == 0) {
-                list  = realloc(list, (i + 1) * sizeof(char*));
-                list[i] = NULL;
-                free(word);
-            } else {
-                list = realloc(list, (i + 2) * sizeof(char*));
-                list[i] = word;
-                list[i + 1] = NULL;
-            }
-            break;
-        }
+    list  = realloc(list, (i + 1) * sizeof(char *));
+    list[i] = get_word(&end);
+    i++;
+    while (end != '\n') {
+        list  = realloc(list, (i + 1) * sizeof(char *));
+        list[i] = get_word(&end);
         i++;
-        list = realloc(list, i * sizeof(char*));
-        list[i - 1] = word;
-        word = get_word(&end);
     }
+    list = realloc(list, (i + 1) * sizeof(char *));
+    list[i] = NULL;
     return list;
 }
 
@@ -93,7 +77,7 @@ void redirection(char **list, int x) {
 }
 
 int is_exit(char **list) {
-    if ((strcmp(list[0], "exit") && strcmp(list[0], "quit")) || (!list[0])) {
+    if (list[0] && strcmp(list[0], "exit") && strcmp(list[0], "quit")) {
         return 1;
     } else {
         return 0;
@@ -102,11 +86,19 @@ int is_exit(char **list) {
 
 int change_dir(char **list) {
     char *home = getenv("HOME");
+    char *path1 = getenv("PWD");
+    char *path2 = NULL;
     if (strcmp(list[0], "cd") == 0) {
         if (list[1] == NULL || (strcmp(list[1], "~") == 0)) {
             chdir(home);
+            path2 = getcwd(path2, strlen(path1) + strlen(home) + 1);
+            setenv("PWD", path2, 1);
+            free(path2);
         } else {
             chdir(list[1]);
+            path2 = getcwd(path2, strlen(path1) + strlen(list[1]) + 1);
+            setenv("PWD", path2, 1);
+            free(path2);
         }
         return 1;
     }
@@ -174,7 +166,7 @@ void pipes(char **list) {
             }
             close(fd[i][1]);
             close(fd[i][0]);
-            redirection(list, x[i]); 
+            redirection(list, x[i]);
             if (execvp(list[0], list) < 0) {
                 perror("exec failed");
                 return;
