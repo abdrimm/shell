@@ -86,11 +86,19 @@ int is_exit(char **list) {
 
 int change_dir(char **list) {
     char *home = getenv("HOME");
+    char *path1 = getenv("PWD");
+    char *path2 = NULL;
     if (strcmp(list[0], "cd") == 0) {
         if (list[1] == NULL || (strcmp(list[1], "~") == 0)) {
             chdir(home);
+            path2 = getcwd(path2, strlen(path1) + strlen(home) + 1);
+            setenv("PWD", path2, 1);
+            free(path2);
         } else {
             chdir(list[1]);
+            path2 = getcwd(path2, strlen(path1) + strlen(list[1]) + 1);
+            setenv("PWD", path2, 1);
+            free(path2);
         }
         return 1;
     }
