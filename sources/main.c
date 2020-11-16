@@ -14,30 +14,29 @@ char *get_word(char *end) {
     if (*end == '\n') {
         return NULL;
     }
-    while (ch != ' ' && ch != '\t' && ch != '\n') {
+    while (ch != ' ' && ch != '\n') {
+        i++;
         word = realloc(word, (i + 1) * sizeof(char));
         if (!word) {
             printf("word error");
             exit(1);
         }
-        word[i] = ch;
-	    i++;
+        word[i - 1] = ch;
         ch = getchar();
     }
-    word = realloc(word, (i + 1) * sizeof(char));
     word[i] = '\0';
     *end = ch;
     return word;
 }
 
 char **get_list() {
-    char end;
+    char end = 0;
     char **list = NULL;
     char *word = get_word(&end);
     int i = 0;
     while (1) {
         if (end == '\n') {
-            if (strlen(word) == 0) {
+            if (strlen(word) == 0) { // if string is empty, do nothing
                 list  = realloc(list, (i + 1) * sizeof(char*));
                 list[i] = NULL;
                 free(word);
@@ -56,44 +55,57 @@ char **get_list() {
     return list;
 }
 
-void redirection(char **list, int x) {
-    int i = x, fd_in = 0, fd_out = 1;
+int redirection(char **list, int x) {
+    int i = x;
+    char fname[100];
     while (list[i]) {
-        if (strcmp(list[i], "<") == 0) {
-            fd_in = open(list[i + 1], O_RDONLY);
-            if (fd_in < 0) {
-                perror("Open failed");
-                exit(1);
-            }
-            dup2(fd_in, 0);
-            close(fd_in);
+        if (strcmp(list[i], ">") == 0) {
+            strcpy(fname, list[i+1]);
+            int fd1 = open(fname,
+                O_WRONLY | O_CREAT | O_TRUNC ,
+                S_IRUSR | S_IWUSR);
+            dup2(fd1, 1);
             free(list[i]);
-            free(list[i + 1]);
+            free(list[i+1]);
+            list[i] = NULL;
+            list[i + 1] = NULL;    //reads command before meeting NULL
+            i++;
+            close(fd1);
+        }
+        if (list[i] && strcmp(list[i], "<") == 0) {
+            strcpy(fname, list[i+1]);
+            int fd2 =  open(fname, O_RDONLY);
+            dup2(fd2, 0);
+            free(list[i]);
+            free(list[i+1]);
             list[i] = NULL;
             list[i + 1] = NULL;
-            break;
-        } else if (strcmp(list[i], ">") == 0) {
-            fd_out = open(list[i + 1], O_WRONLY | O_CREAT | O_TRUNC,
-                                            S_IRUSR | S_IWUSR);
-            if (fd_out < 0) {
-                perror("Open failed");
-                exit(1);
-            }
-            dup2(fd_out, 1);
-            close(fd_out);
-            free(list[i]);
-            free(list[i + 1]);
-            list[i] = NULL;
-            list[i + 1] = NULL;
-            break;
+            i++;
+            close(fd2);
         }
         i++;
     }
-    return;
+    return 0;
+}
+
+int pipe_line(char **list, int **x) {
+    int i = 0;
+    int cnt = 0;
+    while (list[i]) {
+        if (strcmp(list[i], "|") == 0) {
+            free(list[i]);
+            list[i] = NULL;
+            cnt++;
+            *x = realloc(*x, (cnt + 1) * sizeof(int));
+            (*x)[cnt] = i + 1;
+        }
+        i++;
+    }
+    return cnt;
 }
 
 int is_exit(char **list) {
-    if ((strcmp(list[0], "exit") && strcmp(list[0], "quit")) || (!list[0])) {
+    if (!list[0] || (strcmp(list[0], "exit") && strcmp(list[0], "quit"))) {
         return 1;
     } else {
         return 0;
@@ -113,106 +125,86 @@ int change_dir(char **list) {
     return 0;
 }
 
-void clear(char **list) {
-    int i = 0;
-    while (list[i] != NULL) {
-        free(list[i]);
-        i++;
+int execute(char **list, int x) {
+    if (execvp(list[x], list + x) < 0) {
+        perror("exec failed");
+        return 1;
+    }
+    return 0;
+}
+
+
+void clear(char **list, int *x, int cnt) {
+    for (int j = 0; j < cnt + 1; j++) {
+        int i = x[j];
+        while (list[i]) {
+            free(list[i]);
+            i++;
+        }
     }
     free(list);
 }
 
-int pipe_lines(char **list, int **x) {
-    int i = 0;
-    int str_num = 0;
-    while (list[i]) {
-        if (strcmp(list[i], "|") == 0) {
-            free(list[i]);
-            list[i] = NULL;
-            str_num++;
-            *x = realloc(*x, (str_num + 1) * sizeof(int));
-            (*x)[str_num] = i + 1;
-        }
-        i++;
-    }
-    return str_num;
-}
-
-void pipes(char **list) {
-    int *x = malloc(sizeof(int));
-    x[0] = 0;
-    int i;
-    int str_num = pipe_lines(list, &x);
-    if (str_num <= 1) {
-        return;
-    }
-    int (*fd)[2] = malloc((str_num + 1) * sizeof(int[2]));
-    for (i = 0; i <= str_num; i++) {
-        pipe(fd[i]);
-	if (change_dir(list) == 1)
-		continue;
-    }
-    if (fork() == 0) {
-        if (str_num) {
-            dup2(fd[0][1], 1);
-        }
-        close(fd[0][1]);
-        close(fd[0][0]);
-        redirection(list, x[0]);
-        if (execvp(list[0], list) < 0) {
-            perror("exec failed");
-            return;
-        }
-    }
-    for (i = 1; i <= str_num; i++) {
-        if (fork() == 0) {
-            dup2(fd[i - 1][0], 0);
-            close(fd[i - 1][0]);
-            close(fd[i - 1][1]);
-            if (i != str_num) {
-                dup2(fd[i][1], 1);
-            }
-            close(fd[i][1]);
-            close(fd[i][0]);
-            redirection(list, x[i]); 
-            if (execvp(list[0], list) < 0) {
-                perror("exec failed");
-                return;
-            }
-        } else {
-            close(fd[i - 1][1]);
-            close(fd[i - 1][0]);
-        }
-    }
-    close(fd[str_num][1]);
-    close(fd[str_num][0]);
-    for (i = 0; i <= str_num; i++) {
-        wait(NULL);
-    }
-    free(fd);
-    clear(list);
-    free(x);
-    x = malloc(sizeof(int));
-    x[0] = 0;
-    list = get_list();
-}
-
 int main() {
-     char **list = get_list();
-     while (is_exit(list)) {
-            if (fork() > 0) {
-                wait(NULL);
-            } else {
-                pipes(list);
-                /*redirection(list);
-                if (execvp(list[0], list) < 0) {
-                    perror("exec failed");
-                    return 1;
-                }*/
+    int *x;
+    x = malloc(1 * sizeof(int));
+    x[0] = 0;//from which place list is executed
+    int cnt;
+    char **list = get_list();
+    while (is_exit(list)) {
+        if(list[0]) {
+            cnt = pipe_line(list, &x);
+            int (*fd)[2] = malloc((cnt + 1) * sizeof(int[2]));
+            for (int i = 0; i <= cnt; i++) {
+                pipe(fd[i]);
             }
-            clear(list);
-            list = get_list();
-     }
-     clear(list);
-     return 0;
+            if (fork() == 0) {
+                if (cnt)
+                    dup2(fd[0][1], 1);
+                for (int j = cnt; j >= 0; j--) {
+                    close(fd[j][1]);
+                    close(fd[j][0]);
+                }
+                redirection(list, x[0]);
+                if (execute(list, x[0])) {
+                    clear(list, x, cnt);
+                    cnt = 0;/
+                    return 1;
+                }
+                return 0;
+            }
+            for (int i = 1; i <= cnt; i++) {
+                if (fork() == 0) {
+                    dup2(fd[i - 1][0], 0);
+                    if (i != cnt) {
+                        dup2(fd[i][1], 1);
+                    }
+                    for (int j = cnt; j >= 0; j--) {
+                        close(fd[j][1]);
+                        close(fd[j][0]);
+                    }
+
+                    redirection(list, x[i]); 
+                    return execute(list, x[i]);
+                } else {
+                    close(fd[i - 1][1]);
+                    close(fd[i - 1][0]);
+                }
+            }
+            close(fd[cnt][1]);
+            close(fd[cnt][0]);
+            for (int i = 0; i <= cnt; i++) {
+                wait(NULL);
+            }
+            free(fd);
+        }
+        clear(list, x, cnt);
+        free(x);
+        x = malloc(1 * sizeof(int));
+        x[0] = 0;
+        list = get_list();
+    }
+    clear(list, x, 0);
+    free(x);
+    return 0;
 }
