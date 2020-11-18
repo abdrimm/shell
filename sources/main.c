@@ -36,7 +36,7 @@ char **get_list() {
     int i = 0;
     while (1) {
         if (end == '\n') {
-            if (strlen(word) == 0) { // if string is empty, do nothing
+            if (strlen(word) == 0) {
                 list  = realloc(list, (i + 1) * sizeof(char*));
                 list[i] = NULL;
                 free(word);
@@ -68,7 +68,7 @@ int redirection(char **list, int x) {
             free(list[i]);
             free(list[i+1]);
             list[i] = NULL;
-            list[i + 1] = NULL;    //reads command before meeting NULL
+            list[i + 1] = NULL; 
             i++;
             close(fd1);
         }
@@ -148,7 +148,7 @@ void clear(char **list, int *x, int cnt) {
 int main() {
     int *x;
     x = malloc(1 * sizeof(int));
-    x[0] = 0;//from which place list is executed
+    x[0] = 0;
     int cnt;
     char **list = get_list();
     while (is_exit(list)) {
@@ -168,7 +168,7 @@ int main() {
                 redirection(list, x[0]);
                 if (execute(list, x[0])) {
                     clear(list, x, cnt);
-                    cnt = 0;/
+                    cnt = 0;
                     return 1;
                 }
                 return 0;
