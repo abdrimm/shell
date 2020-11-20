@@ -112,19 +112,6 @@ int is_exit(char **list) {
     }
 }
 
-int change_dir(char **list) {
-    char *home = getenv("HOME");
-    if (strcmp(list[0], "cd") == 0) {
-        if (list[1] == NULL || (strcmp(list[1], "~") == 0)) {
-            chdir(home);
-        } else {
-            chdir(list[1]);
-        }
-        return 1;
-    }
-    return 0;
-}
-
 int execute(char **list, int x) {
     if (execvp(list[x], list + x) < 0) {
         perror("exec failed");
@@ -151,42 +138,26 @@ int main() {
     x[0] = 0;
     int cnt;
     char **list = get_list();
-    while (is_exit(list)) {
-        if(list[0]) {
+    while (!list[0] || (strcmp(list[0], "exit") && strcmp(list[0], "quit"))) {
+        if (list[0]) {
             cnt = pipe_line(list, &x);
             int (*fd)[2] = malloc((cnt + 1) * sizeof(int[2]));
-            for (int i = 0; i <= cnt; i++) {
+            for (int i = 0; i < cnt; i++) {
                 pipe(fd[i]);
             }
-            if (fork() == 0) {
-                if (cnt)
-                    dup2(fd[0][1], 1);
-                for (int j = cnt; j >= 0; j--) {
-                    close(fd[j][1]);
-                    close(fd[j][0]);
-                }
-                redirection(list, x[0]);
-                if (execute(list, x[0])) {
-                    clear(list, x, cnt);
-                    cnt = 0;
-                    return 1;
-                }
-                return 0;
-            }
-            for (int i = 1; i <= cnt; i++) {
+            for (int i = 0; i <= cnt; i++) {
                 if (fork() == 0) {
-                    dup2(fd[i - 1][0], 0);
-                    if (i != cnt) {
+                    if (i)
+                        dup2(fd[i - 1][0], 0);
+                    if (cnt && i != cnt)
                         dup2(fd[i][1], 1);
-                    }
                     for (int j = cnt; j >= 0; j--) {
                         close(fd[j][1]);
                         close(fd[j][0]);
                     }
-
                     redirection(list, x[i]); 
                     return execute(list, x[i]);
-                } else {
+                } else if (i) {
                     close(fd[i - 1][1]);
                     close(fd[i - 1][0]);
                 }
