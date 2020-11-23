@@ -142,7 +142,7 @@ int main() {
         if (list[0]) {
             cnt = pipe_line(list, &x);
             int (*fd)[2] = malloc((cnt + 1) * sizeof(int[2]));
-            for (int i = 0; i < cnt; i++) {
+            for (int i = 0; i <= cnt; i++) {
                 pipe(fd[i]);
             }
             for (int i = 0; i <= cnt; i++) {
