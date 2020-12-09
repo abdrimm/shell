@@ -138,7 +138,7 @@ int main() {
     x[0] = 0;
     int cnt;
     char **list = get_list();
-    while (!list[0] || (strcmp(list[0], "exit") && strcmp(list[0], "quit"))) {
+    while (is_exit(list)) {
         if (list[0]) {
             cnt = pipe_line(list, &x);
             int (*fd)[2] = malloc((cnt + 1) * sizeof(int[2]));
